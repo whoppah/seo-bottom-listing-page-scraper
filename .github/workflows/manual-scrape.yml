@@ -1,0 +1,84 @@
+name: 🎯 Manual Scrape
+
+on:
+  workflow_dispatch:
+    inputs:
+      category:
+        description: 'Single category to scrape'
+        required: true
+        default: 'furniture'
+        type: choice
+        options:
+          - furniture
+          - lighting
+          - decoration
+          - decoration/vases
+          - art
+          - style/vintage
+          - style/mid-century-modern
+          - style/scandinavian
+          - furniture/chairs
+          - furniture/sofas
+          - lighting/pendant-lamps
+
+jobs:
+  scrape-single:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python  
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: 🔍 Scrape category: ${{ github.event.inputs.category }}
+      run: |
+        echo "🔍 Scraping category: ${{ github.event.inputs.category }}"
+        python scrape_category.py "${{ github.event.inputs.category }}"
+        
+    - name: 📊 Show results
+      run: |
+        category="${{ github.event.inputs.category }}"
+        filename="${category//\//_}_content.json"
+        
+        if [ -f "$filename" ]; then
+          echo "✅ Successfully scraped: $category"
+          echo "📁 File: $filename"
+          echo "📊 File size: $(ls -lh $filename | awk '{print $5}')"
+          
+          # Show content summary
+          python -c "
+import json
+with open('$filename', 'r') as f:
+    data = json.load(f)
+    
+print(f'📋 Title: {data.get(\"page_title\", \"N/A\")}')
+print(f'📑 Headings: {len(data.get(\"section_headings\", []))}')
+print(f'📝 Description length: {len(data.get(\"category_description\", \"\"))} chars')
+print(f'🔍 SEO content length: {len(data.get(\"seo_content\", \"\"))} chars')
+
+if data.get('section_headings'):
+    print('\\n🎯 Section headings:')
+    for i, heading in enumerate(data['section_headings'][:5], 1):
+        print(f'  {i}. {heading}')
+"
+        else
+          echo "❌ No output file found"
+          exit 1
+        fi
+        
+    - name: 📁 Upload result
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ github.event.inputs.category }}-content
+        path: ${{ github.event.inputs.category }}_content.json
+        retention-days: 7

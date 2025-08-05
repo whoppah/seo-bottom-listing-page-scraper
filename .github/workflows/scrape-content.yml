@@ -1,0 +1,127 @@
+name: 🔍 Scrape Whoppah Content
+
+on:
+  # Run daily at 8 AM UTC (adjust timezone as needed)
+  schedule:
+    - cron: '0 8 * * *'
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      categories:
+        description: 'Categories to scrape (comma-separated)'
+        required: false
+        default: 'furniture,lighting,decoration/vases,style/vintage'
+        type: string
+      commit_results:
+        description: 'Commit results back to repository'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: 🔍 Scrape content
+      run: |
+        # Create output directory
+        mkdir -p scraped_data
+        
+        # Define categories to scrape
+        if [ "${{ github.event.inputs.categories }}" != "" ]; then
+          categories="${{ github.event.inputs.categories }}"
+        else
+          # Default categories for scheduled runs
+          categories="furniture,lighting,decoration,decoration/vases,style/vintage,style/mid-century-modern"
+        fi
+        
+        # Split categories and scrape each one
+        IFS=',' read -ra CATS <<< "$categories"
+        for category in "${CATS[@]}"; do
+          echo "🔍 Scraping: $category"
+          python scrape_category.py "$category" || echo "❌ Failed to scrape $category"
+          
+          # Move result to organized folder
+          if [ -f "${category//\//_}_content.json" ]; then
+            mv "${category//\//_}_content.json" "scraped_data/"
+            echo "✅ Scraped $category successfully"
+          fi
+          
+          # Be respectful - wait between requests
+          sleep 3
+        done
+        
+    - name: 📊 Generate summary
+      run: |
+        echo "# 📊 Scraping Summary - $(date)" > scraped_data/SUMMARY.md
+        echo "" >> scraped_data/SUMMARY.md
+        echo "| Category | Status | File Size | Content Length |" >> scraped_data/SUMMARY.md
+        echo "|----------|--------|-----------|----------------|" >> scraped_data/SUMMARY.md
+        
+        for file in scraped_data/*.json; do
+          if [ -f "$file" ]; then
+            filename=$(basename "$file")
+            category=$(echo "$filename" | sed 's/_content.json//' | sed 's/_/\//g')
+            size=$(ls -lh "$file" | awk '{print $5}')
+            content_length=$(python -c "
+import json
+try:
+    with open('$file', 'r') as f:
+        data = json.load(f)
+    desc_len = len(data.get('category_description', ''))
+    seo_len = len(data.get('seo_content', ''))
+    total = desc_len + seo_len
+    print(f'{total} chars')
+except:
+    print('Error')
+")
+            echo "| $category | ✅ Success | $size | $content_length |" >> scraped_data/SUMMARY.md
+          fi
+        done
+        
+    - name: 📁 Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: whoppah-content-${{ github.run_number }}
+        path: scraped_data/
+        retention-days: 30
+        
+    - name: 📤 Commit results (optional)
+      if: ${{ github.event.inputs.commit_results == 'true' }}
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Create/update data directory
+        mkdir -p data
+        cp scraped_data/* data/ 2>/dev/null || true
+        
+        git add data/
+        git diff --staged --quiet || git commit -m "📊 Update scraped content - $(date)"
+        git push
+        
+    - name: 📈 Display summary
+      run: |
+        echo "## 🎉 Scraping Complete!"
+        if [ -f "scraped_data/SUMMARY.md" ]; then
+          cat scraped_data/SUMMARY.md
+        fi
+        echo ""
+        echo "📁 Files created:"
+        ls -la scraped_data/ || echo "No files created"

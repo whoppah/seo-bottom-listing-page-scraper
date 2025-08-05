@@ -65,11 +65,13 @@ whoppah-scraper/
 ## ✨ Features
 
 - 🚀 **Simple CLI**: One command to scrape any category
+- 🤖 **GitHub Actions**: Automated cloud scraping (no local setup needed!)
 - 🎯 **Targeted Extraction**: Focuses on bottom SEO content sections  
 - 📊 **Structured Output**: Clean JSON with headings and descriptions
 - 🛡️ **Robust**: Handles SSL, encoding, and rate limiting
 - 🔧 **Configurable**: 80+ predefined category URLs
 - 📝 **Rich Content**: 2,000-4,000 characters per page typically
+- ⏰ **Scheduled Runs**: Daily automated scraping via GitHub Actions
 
 ## 🚀 Quick Start
 
@@ -164,7 +166,26 @@ python scrape_category.py decoration/vases
 python scrape_category.py style/vintage
 ```
 
-### Option 3: Programmatic Usage
+### Option 3: GitHub Actions (Automated Cloud Scraping) 🤖
+
+**No local setup required!** Use GitHub's cloud infrastructure:
+
+1. **Fork this repository** on GitHub
+2. **Go to Actions tab** in your fork  
+3. **Choose a workflow**:
+   - **🔍 Scrape Content**: Daily automated scraping
+   - **🎯 Manual Scrape**: Single category on-demand
+   - **🧪 Test Scraper**: Validate setup
+4. **Click "Run workflow"** and customize options
+5. **Download results** from the Artifacts section
+
+**Scheduled Scraping**: Automatically runs daily at 8 AM UTC, scrapes 6+ categories, and stores results for 30 days.
+
+**Perfect for**: Regular content monitoring, SEO analysis, no-maintenance automation.
+
+See [`.github/README.md`](.github/README.md) for detailed workflow documentation.
+
+### Option 4: Programmatic Usage
 
 ```python
 from simple_working_scraper import scrape_whoppah_content
