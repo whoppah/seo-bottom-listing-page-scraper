@@ -1,11 +1,7 @@
 name: 🔍 Scrape Whoppah Content
 
 on:
-  # Run daily at 8 AM UTC (adjust timezone as needed)
-  schedule:
-    - cron: '0 8 * * *'
-  
-  # Allow manual triggering
+  # Manual triggering only
   workflow_dispatch:
     inputs:
       categories:

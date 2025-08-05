@@ -65,13 +65,13 @@ whoppah-scraper/
 ## ✨ Features
 
 - 🚀 **Simple CLI**: One command to scrape any category
-- 🤖 **GitHub Actions**: Automated cloud scraping (no local setup needed!)
+- 🤖 **GitHub Actions**: Manual cloud scraping (no local setup needed!)
 - 🎯 **Targeted Extraction**: Focuses on bottom SEO content sections  
 - 📊 **Structured Output**: Clean JSON with headings and descriptions
 - 🛡️ **Robust**: Handles SSL, encoding, and rate limiting
 - 🔧 **Configurable**: 80+ predefined category URLs
 - 📝 **Rich Content**: 2,000-4,000 characters per page typically
-- ⏰ **Scheduled Runs**: Daily automated scraping via GitHub Actions
+- 🔄 **On-Demand**: Manual scraping when you need it
 
 ## 🚀 Quick Start
 
@@ -166,24 +166,20 @@ python scrape_category.py decoration/vases
 python scrape_category.py style/vintage
 ```
 
-### Option 3: GitHub Actions (Automated Cloud Scraping) 🤖
+### Option 3: GitHub Actions (Cloud Scraping) 🤖
 
 **No local setup required!** Use GitHub's cloud infrastructure:
 
 1. **Fork this repository** on GitHub
 2. **Go to Actions tab** in your fork  
 3. **Choose a workflow**:
-   - **🔍 Scrape Content**: Daily automated scraping
-   - **🎯 Manual Scrape**: Single category on-demand
+   - **🔍 Scrape Content**: Multiple categories at once
+   - **🎯 Manual Scrape**: Single category with dropdown
    - **🧪 Test Scraper**: Validate setup
 4. **Click "Run workflow"** and customize options
 5. **Download results** from the Artifacts section
 
-**Scheduled Scraping**: Automatically runs daily at 8 AM UTC, scrapes 6+ categories, and stores results for 30 days.
-
-**Perfect for**: Regular content monitoring, SEO analysis, no-maintenance automation.
-
-See [`.github/README.md`](.github/README.md) for detailed workflow documentation.
+**Perfect for**: On-demand scraping, team collaboration, no local dependencies.
 
 ### Option 4: Programmatic Usage
 
@@ -197,6 +193,108 @@ print(f"Title: {result['page_title']}")
 print(f"Headings: {len(result['section_headings'])}")
 print(f"Content: {result['category_description'][:200]}...")
 ```
+
+## 🤖 GitHub Actions Usage
+
+### Available Workflows
+
+**1. 🔍 Multi-Category Scraping** (`scrape-content.yml`)
+- Scrape multiple categories in one run
+- Default: furniture, lighting, decoration/vases, style/vintage
+- Customize categories via input field
+- Results stored as downloadable artifacts
+- Optional: commit results back to repository
+
+**2. 🎯 Single Category Scraping** (`manual-scrape.yml`)  
+- Quick single-category scraping
+- Dropdown menu with 11 popular categories
+- Immediate results in workflow logs
+- Perfect for testing or one-off needs
+
+**3. 🧪 Setup Testing** (`test-scraper.yml`)
+- Validates Python environment and dependencies
+- Runs on code changes (PRs/pushes)
+- Ensures everything works before scraping
+
+### How to Use GitHub Actions
+
+**Step 1: Fork Repository**
+```bash
+1. Go to https://github.com/your-username/whoppah-scraper
+2. Click "Fork" button
+3. Enable GitHub Actions in your fork (if prompted)
+```
+
+**Step 2: Run Workflows**
+```bash
+1. Go to "Actions" tab in your forked repository
+2. Select a workflow:
+   - "🔍 Scrape Whoppah Content" - for multiple categories
+   - "🎯 Manual Scrape" - for single category
+3. Click "Run workflow"
+4. Customize inputs (optional)
+5. Click green "Run workflow" button
+```
+
+**Step 3: Download Results**
+```bash
+1. Wait 2-5 minutes for workflow to complete
+2. Scroll to "Artifacts" section in completed run
+3. Download the zip file containing JSON results
+4. Extract files to view scraped content
+```
+
+### GitHub Actions Benefits
+
+- ✅ **No Local Setup**: Works immediately after forking
+- ✅ **Cloud Infrastructure**: Uses GitHub's servers, not your computer
+- ✅ **Free Usage**: Unlimited for public repositories
+- ✅ **Team Collaboration**: Multiple people can trigger scrapes
+- ✅ **Automatic Storage**: Results kept for 30 days
+- ✅ **Professional Logs**: Detailed execution information
+
+### Workflow Results
+
+**Multi-Category Scraping Output:**
+```json
+scraped_data/
+├── furniture_content.json
+├── lighting_content.json  
+├── decoration_vases_content.json
+├── style_vintage_content.json
+└── SUMMARY.md
+```
+
+**Single Category Output:**
+```json
+furniture_content.json  # Downloaded as artifact
+```
+
+### Customization Options
+
+**Multi-Category Workflow:**
+- **Categories**: Comma-separated list (e.g., "furniture,lighting,art")
+- **Commit Results**: Save results back to repository (true/false)
+
+**Single Category Workflow:**
+- **Category**: Choose from dropdown menu of popular categories
+
+### Troubleshooting GitHub Actions
+
+**Workflow Failed:**
+- Check logs for specific error messages
+- Verify category names exist on Whoppah.com
+- May be temporary site or network issues
+
+**No Artifacts:**
+- Ensure workflow completed successfully
+- Check if scraper found content for chosen categories
+- Some categories may have different page structures
+
+**Rate Limiting:**
+- GitHub Actions includes respectful delays
+- If blocked, wait and try again later
+- Consider reducing number of categories per run
 
 ## ⚡ What To Expect
 
